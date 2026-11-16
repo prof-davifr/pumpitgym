@@ -1,0 +1,11 @@
+{
+  "name": "pumpitgym",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Treino de pernas e dança em casa, controlado pelo corpo com a webcam.",
+  "scripts": {
+    "test": "node --test testes/*.test.mjs",
+    "baixar": "./ferramentas/baixar-mediapipe.sh"
+  }
+}

@@ -1,0 +1,35 @@
+@font-face {
+  font-family: 'Audiowide';
+  src: url('../vendor/fontes/Audiowide-Regular.ttf') format('truetype');
+  font-display: block;
+}
+@font-face {
+  font-family: 'Orbitron';
+  src: url('../vendor/fontes/Orbitron.ttf') format('truetype');
+  font-weight: 400 900;
+  font-display: block;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #07020f;
+  overflow: hidden;
+}
+
+#tela {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* o vídeo só alimenta a detecção e o desenho no canvas */
+#camera-video {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
