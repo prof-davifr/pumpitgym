@@ -14,7 +14,7 @@ import { coreografia } from '../js/treino/danca.js';
 import { Sessao } from '../js/treino/sessao.js';
 import { Historico } from '../js/dados/historico.js';
 
-const [foco, animo, forca] = PERFIS_PADRAO;
+const [animo, foco, forca] = PERFIS_PADRAO;
 
 // Lê uma pose parada e devolve o leitor (com q, ombro, quadril e tronco).
 function ler(corpo, camera = {}) {
@@ -134,7 +134,7 @@ test('calorias: fórmula do ACSM', () => {
   assert.ok(Math.abs(calorias(5, 70, 600) - 61.25) < 1e-9);
 });
 
-test('perfil do Ânimo: nenhum exercício de impacto, giro ou flexão profunda', () => {
+test('perfil Ânimo: nenhum exercício de impacto, giro ou flexão profunda', () => {
   for (const [id, ex] of Object.entries(EXERCICIOS)) {
     if (ex.impacto || ex.giro || ex.flexaoProfunda) assert.equal(permitido(ex, animo), false, id);
   }
@@ -315,4 +315,31 @@ test('histórico: grava, soma por dia, recorde, exporta e importa', () => {
 
   // os dados continuam depois de recarregar
   assert.equal(new Historico(arm).sessoesDe('foco').length, 2);
+});
+
+test('histórico: dados salvos com os ids antigos dos perfis passam para os ids novos, pela posição', () => {
+  const arm = memoria();
+  const antigo = {
+    versao: 1,
+    perfis: [
+      { id: 'p1', pesoKg: 80, restricoes: {} },
+      { id: 'p2', pesoKg: 60, restricoes: { profundidadeMax: 0.26 } },
+      { id: 'p3', pesoKg: null, restricoes: {} },
+    ],
+    sessoes: [
+      { id: 'p1-2026-11-15T22:10:00.000Z', perfil: 'p1', plano: 'desafio', inicio: '2026-11-15T22:10:00.000Z', kcal: 9, blocos: [{ exercicio: 'agachamento', reps: 24, segundos: 60 }] },
+      { id: 'p2-2026-11-16T22:10:00.000Z', perfil: 'p2', plano: 'treino', inicio: '2026-11-16T22:10:00.000Z', kcal: 60, blocos: [] },
+    ],
+  };
+  arm.setItem('pumpitgym-v1', JSON.stringify(antigo));
+  const h = new Historico(arm);
+  assert.equal(h.perfil('foco').pesoKg, 80);
+  assert.equal(h.perfil('animo').pesoKg, 60);
+  assert.equal(h.perfil('animo').restricoes.profundidadeMax, 0.26);
+  assert.equal(h.perfil('animo').restricoes.semImpacto, true, 'o baixo impacto continua');
+  assert.equal(h.recorde('foco', 'desafio'), 24);
+  assert.equal(h.sessoesDe('animo')[0].id, 'animo-2026-11-16T22:10:00.000Z');
+  // já gravou com os ids novos, e um backup antigo importado de novo não duplica
+  assert.match(arm.getItem('pumpitgym-v1'), /"perfil": ?"foco"/);
+  assert.equal(h.importar(JSON.stringify(antigo)), 0);
 });

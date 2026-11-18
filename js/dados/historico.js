@@ -1,6 +1,6 @@
 // Perfis e sessões guardados no navegador (localStorage), com exportar e importar.
 // O armazenamento vem de fora (localStorage ou um objeto igual), assim os testes rodam no Node.
-import { PERFIS_PADRAO } from '../treino/perfis.js';
+import { ORDEM_ANTIGA, PERFIS_PADRAO } from '../treino/perfis.js';
 
 const CHAVE = 'pumpitgym-v1';
 
@@ -20,7 +20,11 @@ export class Historico {
     if (!this.armazenamento) return;
     try {
       const salvo = JSON.parse(this.armazenamento.getItem(CHAVE) || 'null');
-      if (salvo && Array.isArray(salvo.sessoes)) this.juntar(salvo);
+      if (salvo && Array.isArray(salvo.sessoes)) {
+        this.juntar(salvo);
+        // grava logo com os ids novos dos perfis
+        if (this.migrar(salvo) !== salvo) this.salvar();
+      }
     } catch {
       // dados estragados: começa do zero, sem apagar o que está salvo até a próxima gravação
     }
@@ -116,7 +120,26 @@ export class Historico {
     return this.dados.sessoes.length - antes;
   }
 
+  // Dados salvos com os ids antigos dos perfis: troca pelos ids novos (pela posição de cada perfil).
+  migrar(outro) {
+    const perfis = outro.perfis || [];
+    const conhecidos = new Set(PERFIS_PADRAO.map((p) => p.id));
+    if (perfis.length !== ORDEM_ANTIGA.length || perfis.some((p) => !p || conhecidos.has(p.id))) return outro;
+    const novo = new Map(perfis.map((p, i) => [p.id, ORDEM_ANTIGA[i]]));
+    return {
+      ...outro,
+      perfis: perfis.map((p) => ({ ...p, id: novo.get(p.id) })),
+      sessoes: outro.sessoes.map((s) => {
+        if (!s || !novo.has(s.perfil)) return s;
+        const perfil = novo.get(s.perfil);
+        const id = typeof s.id === 'string' && s.id.startsWith(`${s.perfil}-`) ? `${perfil}-${s.id.slice(s.perfil.length + 1)}` : s.id;
+        return { ...s, perfil, id };
+      }),
+    };
+  }
+
   juntar(outro) {
+    outro = this.migrar(outro);
     for (const p of outro.perfis || []) {
       const meu = this.perfil(p.id);
       if (!meu) continue;

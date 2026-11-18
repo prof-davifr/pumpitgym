@@ -59,7 +59,7 @@ históricos separados. Use EXPORTAR e IMPORTAR (em OPÇÕES) para levar os dados
 
 ## Perfil de baixo impacto
 
-O perfil do Ânimo é de baixo impacto, com estas regras em todas as atividades:
+O perfil Ânimo é de baixo impacto, com estas regras em todas as atividades:
 
 - **Sem impacto e sem giro**: nenhum salto. No lugar deles entram o polichinelo sem pulo, a marcha,
   a perna para o lado e a ponta dos pés. Se a câmera vê um pulo, o app avisa SEM PULAR.
