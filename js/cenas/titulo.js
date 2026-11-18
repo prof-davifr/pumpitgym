@@ -2,17 +2,22 @@
 import { LARGURA, CORES } from '../config.js';
 import { cromado, texto } from '../arte/neon.js';
 import { Menu } from '../ui.js';
+import { botaoSair, escolherSair, atualizarBotaoSair } from '../motor/sair.js';
 
 export class Titulo {
   constructor(app) {
     this.app = app;
-    this.menu = new Menu([{ id: 'comecar', x: LARGURA / 2 - 210, y: 440, l: 420, a: 110, rotulo: 'COMEÇAR', cor: CORES.rosa, tam: 44 }]);
+    this.sair = botaoSair(LARGURA - 300, 30, 270, 70);
+    this.menu = new Menu([{ id: 'comecar', x: LARGURA / 2 - 210, y: 440, l: 420, a: 110, rotulo: 'COMEÇAR', cor: CORES.rosa, tam: 44 }, this.sair]);
     app.entrada.iniciar();
     app.audio.tocar('menu');
   }
 
   atualizar() {
-    if (this.menu.atualizar(this.app)) this.app.trocar('jogadores');
+    const b = this.menu.atualizar(this.app);
+    if (b && b.id === 'sair') escolherSair(b, this.app.t);
+    else if (b) this.app.trocar('jogadores');
+    atualizarBotaoSair(this.sair, this.app.t);
   }
 
   desenhar(c) {
