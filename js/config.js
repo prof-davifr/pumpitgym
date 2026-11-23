@@ -100,7 +100,7 @@ export function salvarOpcoes() {
 // Opinião de quem joga (js/motor/opiniao.js): o Google Forms do jogo e os nomes dos campos (entry.N).
 // Sem formulário, o jogo não pergunta nada.
 export const OPINIAO = {
-  formulario: '',
-  campos: { voto: '', dados: '' },
+  formulario: 'https://docs.google.com/forms/d/e/1FAIpQLScAV1Ft_U_2_29e9L85_Pgwu7QrqudSdblUW8fp8kQ7UvJ0wg/viewform',
+  campos: { voto: 'entry.1295944358', dados: 'entry.209197006' },
   minutosAntes: 4, // tempo de jogo antes da primeira pergunta
 };
