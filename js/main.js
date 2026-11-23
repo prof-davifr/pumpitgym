@@ -1,5 +1,5 @@
 // Laço principal: lê a entrada, atualiza a cena e desenha.
-import { LARGURA, ALTURA, CORES, opcoes } from './config.js';
+import { LARGURA, ALTURA, CORES, OPINIAO, opcoes } from './config.js';
 import { Entrada } from './motor/entrada.js';
 import { Audio } from './som/audio.js';
 import { Historico } from './dados/historico.js';
@@ -16,10 +16,13 @@ import { Esforco } from './cenas/esforco.js';
 import { Resultado } from './cenas/resultado.js';
 import { Evolucao } from './cenas/evolucao.js';
 import { Opcoes } from './cenas/opcoes.js';
+import { Opiniao } from './cenas/opiniao.js';
+import { Opiniao as OpiniaoDados } from './motor/opiniao.js';
+import { VERSAO } from './versao.js';
 
 const CENAS = {
   titulo: Titulo, jogadores: Jogadores, peso: Peso, calibracao: Calibracao, menu: MenuPrincipal,
-  sessao: CenaSessao, esforco: Esforco, resultado: Resultado, evolucao: Evolucao, opcoes: Opcoes,
+  sessao: CenaSessao, esforco: Esforco, resultado: Resultado, evolucao: Evolucao, opcoes: Opcoes, opiniao: Opiniao,
 };
 
 const tela = document.getElementById('tela');
@@ -45,6 +48,20 @@ function converter(px, py) {
   return { x: (px * dpr - margemX) / escala, y: (py * dpr - margemY) / escala };
 }
 
+// ?opiniao=1 pergunta na primeira volta ao menu; ?opiniao=exemplo usa um formulário de mentira (fotos de teste)
+const parametros = new URLSearchParams(location.search);
+const pedidoOpiniao = parametros.get('opiniao');
+const opiniao = new OpiniaoDados(
+  pedidoOpiniao === 'exemplo' ? { formulario: 'https://docs.google.com/forms/d/e/EXEMPLO/viewform', campos: { voto: 'entry.1', dados: 'entry.2' } } : OPINIAO,
+  {
+    versao: VERSAO,
+    sempre: pedidoOpiniao === '1' || pedidoOpiniao === 'exemplo',
+    desligada: pedidoOpiniao === '0' || (!pedidoOpiniao && (parametros.has('robo') || navigator.webdriver)),
+    enviar: pedidoOpiniao === 'exemplo' ? async () => {} : undefined,
+  },
+);
+opiniao.enviarFila(); // votos que ficaram sem internet na última vez
+
 const app = {
   c,
   t: 0,
@@ -57,7 +74,15 @@ const app = {
   nomeCena: '',
   transicao: 1,
 
+  opiniao,
+
   trocar(nome, dados = {}) {
+    // na volta ao menu depois de um treino de alguns minutos, pede a opinião (uma vez)
+    if (nome === 'menu' && this.nomeCena === 'resultado' && opiniao.devePerguntar()) {
+      const s = this.cena.sessao;
+      const contexto = { de: 'resultado', plano: s && s.plano && s.plano.nome, pessoas: this.jogadores.length, camera: this.entrada.camera.estado === 'pronta' ? 1 : 0 };
+      return this.trocar('opiniao', { destino: { nome, dados }, contexto });
+    }
     this.nomeCena = nome;
     this.cena = new CENAS[nome](this, dados);
     this.transicao = 1;
@@ -117,6 +142,7 @@ function quadro(agora) {
     app.entrada.atualizar(app.t, converter);
     if (app.entrada.usouGesto) app.audio.ligar();
     app.cena.atualizar(dt);
+    if (app.nomeCena === 'sessao') opiniao.contarJogo(dt);
   }
 
   c.setTransform(1, 0, 0, 1, 0, 0);
@@ -129,7 +155,7 @@ function quadro(agora) {
   c.clip();
   app.cena.desenhar(c);
   if (!app.cena.semCursor) desenharCursores(c, app);
-  linhasDeTv(c);
+  if (!app.cena.semLinhasDeTv) linhasDeTv(c);
   if (app.transicao > 0) {
     app.transicao = Math.max(0, app.transicao - dt * 3);
     c.fillStyle = `rgba(18,5,43,${app.transicao})`;

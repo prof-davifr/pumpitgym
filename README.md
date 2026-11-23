@@ -107,6 +107,22 @@ EXPORTAR baixa um arquivo `pumpitgym-AAAA-MM-DD.json`; IMPORTAR junta um arquivo
 
 O mouse clica nos botões. No teclado: setas escolhem, Enter confirma, Esc volta (ou pausa a sessão).
 
+## Opinião de quem joga
+
+Uma vez por visita (depois de 4 minutos de treino, na volta do resultado ao menu), o jogo pergunta "gostou?"
+com três rostos e mostra um QR code do Google Forms do jogo, para quem quiser escrever mais.
+Segure a mão sobre um rosto para votar (ou setas e Enter, ou o mouse). "Agora não" pula, e o jogo segue sozinho depois de 30 segundos.
+Depois de perguntar, só pergunta de novo no outro dia.
+
+O voto vai para o formulário com a versão publicada, o tempo de jogo e onde a pessoa estava
+(atividade e número de pessoas). Não vai nome, imagem da câmera nem nada pessoal.
+Sem internet, o voto espera no navegador e sai na próxima vez que o jogo abrir.
+
+O formulário e os nomes dos campos ficam em `OPINIAO`, em `js/config.js`; vazio, o jogo não pergunta.
+O código fica em `js/motor/opiniao.js` (igual em todos os jogos da série) e `js/cenas/opiniao.js`.
+`?opiniao=1` pergunta já na primeira volta; `?opiniao=exemplo` usa um formulário de mentira, sem enviar nada;
+`?opiniao=0` desliga. O robô (`?robo=1`) e o navegador dos testes automáticos não perguntam.
+
 ## Desenvolvimento
 
 ```bash

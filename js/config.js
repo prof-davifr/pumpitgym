@@ -96,3 +96,11 @@ export const opcoes = typeof localStorage !== 'undefined' ? carregarOpcoes() : {
 export function salvarOpcoes() {
   if (typeof localStorage !== 'undefined') localStorage.setItem(CHAVE_OPCOES, JSON.stringify(opcoes));
 }
+
+// Opinião de quem joga (js/motor/opiniao.js): o Google Forms do jogo e os nomes dos campos (entry.N).
+// Sem formulário, o jogo não pergunta nada.
+export const OPINIAO = {
+  formulario: '',
+  campos: { voto: '', dados: '' },
+  minutosAntes: 4, // tempo de jogo antes da primeira pergunta
+};
